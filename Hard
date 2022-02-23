@@ -1,4 +1,4 @@
-185 Department Top three salaries
+# 185 Department Top three salaries (HARD)
 
 
 SELECT tb2.Name as Department, tb1.Name as Employee, tb1.Salary as Salary
@@ -8,3 +8,121 @@ ON tb1.DepartmentId = tb2.Id
 WHERE (SELECT Count(Distinct Salary)
        FROM Employee as tb3
 	   WHERE tb3.DepartmentId = tb1.DepartmentId AND tb3.Salary > tb1.Salary) <3;
+	   
+	   
+	   
+#262: Trips and Users (HARD)
+
+SELECT Request_at AS Day,
+ROUND(SUM(IF(Status != "completed", 1,0)) /COUNT(Status),2) AS "Cancellation Rate"
+FROM Trips
+WHERE Request_at Between "2013-10-01" AND "2013-10-03"
+AND Client_Id NOT IN (SELECT Users_Id FROM Users WHERE Banned = "Yes")
+AND Driver_Id NOT IN (SELECT Users_Id FROM Users WHERE Banned = "Yes")
+GROUP BY 1;
+
+
+# 601. HUMAN TRAFFIC OF STADIUM (HARD)
+
+SELECT distinct s1.*
+FROM Stadium s1 JOIN Stadium s2 JOIN Stadium s3
+ON (s1.id = s2.id-1 AND s1.id= s3.id-2) OR
+(s1.id = s2.id+1 AND s1.id = s3.id-1) OR
+(s1.id = s2.id+1 AND s1.id = s3.id+2)
+WHERE s1.people >= 100 AND s2.people >= 100 AND s3.people >= 100
+ORDER BY visit_date;
+
+
+SELECT distinct tb1.id, tb1.visit_date, tb1.people
+FROM Stadium tb1, Stadium tb2, Stadium tb3
+WHERE tb1.people >= 100 AND tb2.people >= 100 AND tb3.people >= 100
+     AND ((tb1.id + 1 = tb2.id AND tb1.id +2 = tb3.id) OR
+     (tb1.id - 1 = tb2.id AND tb1.id +1 = tb3.id) OR
+     (tb1.id - 2 = tb2.id AND tb1.id -1 = tb3.id) OR
+     (tb1.id - 1=  tb3.id AND tb1.id + 1 = tb2.id) OR
+     (tb1.id - 2 = tb3.id AND tb1.id -1 = tb2.id ) OR
+	 (tb1.id + 1 = tb3.id AND tb1.id + 2 = tb2.id)
+	  )
+ORDER BY tb1.id;
+
+
+
+# 1479. Sales by Day of the Week （HARD)
+
+SELECT Items.item_category AS Category, 
+sum(IF(WEEKDAY(order_date)=0, quantity, 0)) AS Monday,
+sum(IF(WEEKDAY(order_date)=1, quantity, 0)) AS Tuesday,
+sum(IF(WEEKDAY(order_date)=2, quantity, 0)) AS Wednesday,
+sum(IF(WEEKDAY(order_date)=3, quantity, 0)) AS Thursday,
+sum(IF(WEEKDAY(order_date)=4, quantity, 0)) AS Friday,
+sum(IF(WEEKDAY(order_date)=5, quantity, 0)) AS Saturday,
+sum(IF(WEEKDAY(order_date)=6, quantity, 0)) AS Sunday
+FROM Items
+LEFT JOIN Orders
+ON Orders.item_id = Items.item_id
+GROUP BY 1
+order by 1;
+
+
+# 569. Median Employee Salary（Hard)
+
+select Id,Company,Salary from 
+(
+select Id,Company,Salary,
+row_number() over(partition by Company order by Salary) as rnk,
+count(Salary) over(partition by Company) as cnt from Employee
+) t 
+where rnk BETWEEN cnt/2 AND cnt/2+1
+
+
+
+# 2118. Build the Equation (Hard)
+
+method1:
+
+with cte as (
+Select 
+CASE WHEN power = 1 and factor < 0 then CONCAT(factor,'X')
+	 WHEN power = 1 and factor > 0 then CONCAT('+',factor,'X')
+	 WHEN power = 0 and factor > 0 then CONCAT('+',factor)
+	 WHEN power = 0 and factor < 0 then CONCAT(factor)
+ELSE
+	CASE WHEN factor > 0 then CONCAT('+',factor,'X','^',power)
+		 ELSE CONCAT(factor,'X','^',power)
+	END
+END as value,
+	power
+from  Terms
+	)
+Select CONCAT(GROUP_CONCAT(value order by power desc SEPARATOR ''),'=0') equation from cte 
+
+
+
+method2:
+
+WITH cte AS (
+
+    SELECT CONCAT(IF(factor >= 0, "+", ""), 
+                        factor, 
+                        CASE WHEN power = 1 THEN "X"
+                            WHEN power = 0 THEN ""
+                            ELSE CONCAT("X^", power)
+                            END
+                ) AS "equation",
+    power
+    FROM Terms
+
+)
+
+SELECT CONCAT(GROUP_CONCAT(DISTINCT equation 
+                           ORDER BY power DESC 
+                           SEPARATOR ""), 
+              "=0") AS "equation" 
+FROM cte
+
+
+
+
+
+
+
